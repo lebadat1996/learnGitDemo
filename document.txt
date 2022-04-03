@@ -1,1 +1,68 @@
-day la tai` lieu
+public class DocTemplateModel {
+    private String docName;
+    private String docType;
+    private Double amount;
+    private String symbol;
+    private String date;
+    private String warehouseCode;
+
+    public String getWarehouseCode() {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
+    }
+
+    public String getDocName() {
+        return docName;
+    }
+
+    public void setDocName(String docName) {
+        this.docName = docName;
+    }
+
+    public String getDocType() {
+        return docType;
+    }
+
+    public void setDocType(String docType) {
+        this.docType = docType;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return "DocTemplateModel{" +
+                "docName='" + docName + '\'' +
+                ", docType='" + docType + '\'' +
+                ", amount=" + amount +
+                ", symbol='" + symbol + '\'' +
+                ", date='" + date + '\'' +
+                ", warehouseCode='" + warehouseCode + '\'' +
+                '}';
+    }
+}
