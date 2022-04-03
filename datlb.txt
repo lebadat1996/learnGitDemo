@@ -1,3 +1,162 @@
-phone: 09090090
-DateOfBirth: 09020909
+import org.apache.poi.ss.usermodel.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+
+public class main {
+    public static final int COLUMN_INDEX_DOC_NAME = 0;
+    public static final int COLUMN_INDEX_DOC_TYPE = 1;
+    public static final int COLUMN_INDEX_AMOUNT = 2;
+    public static final int COLUMN_INDEX_SYMBOL = 3;
+    public static final int COLUMN_INDEX_DATE = 4;
+
+    public static void main(String[] args) throws Exception {
+
+
+
+        final String excelFilePath = "C:\\Users\\HP13022022\\Desktop\\Danhsachgiayto_template20220402101732.xlsx";
+        InputStream inputStream = new FileInputStream(new File(excelFilePath));
+        List<DocTemplateModel> docTemplateModels = readTemplateDoc(inputStream);
+
+        for (int i = 0; i < docTemplateModels.size(); i++) {
+            //  System.out.println(docTemplateModels.get(i));
+            String makho = "110000000329_0010";
+// Lấy mã kho 13 kí tự đầu tiên
+            String warehouseCode = makho.substring(0, 12);
+            System.out.println("warehouseCode" + warehouseCode);
+
+// lấy 4 kí tự cuối và convert 4 kí tự cuối  sang int để làm mốc bắt đầu tăng dần tiếp theo
+            int number = Integer.parseInt(makho.substring(13, 17));
+            System.out.println(number);
+            int numberSequence = number + (i + 1);
+            System.out.println("numberSequence: " + numberSequence);
+            StringBuilder stringBuilders = new StringBuilder();
+            Formatter formatter = new Formatter(stringBuilders);
+            StringBuilder warehouseCodeSequence = new StringBuilder();
+            warehouseCodeSequence.append(warehouseCode);
+            warehouseCodeSequence.append("_");
+            warehouseCodeSequence.append(formatter.format("%04d", numberSequence));
+            docTemplateModels.get(i).setWarehouseCode(warehouseCodeSequence.toString());
+
+        }
+        System.out.println(docTemplateModels);
+
+    }
+
+    public static List<DocTemplateModel> readTemplateDoc(InputStream inputStream) throws Exception {
+        List<DocTemplateModel> docTemplateModels = new ArrayList<DocTemplateModel>();
+        try {
+            System.out.println("start read");
+
+            Workbook workbook = WorkbookFactory.create(inputStream);
+            System.out.println("start workbook");
+            System.out.println(workbook.getSheet("Danhsachgiayto_template"));
+
+            System.out.println("start workbook 0");
+            Sheet sheet = workbook.getSheet("Danhsachgiayto_template");
+            System.out.println("start workbook  1");
+            Iterator<Row> iterator = sheet.iterator();
+            while (iterator.hasNext()) {
+                Row nextRow = iterator.next();
+                if (nextRow.getRowNum() == 0) {
+                    // Ignore header
+                    continue;
+                }
+                // Get all cells
+                Iterator<Cell> cellIterator = nextRow.cellIterator();
+                // Read cells and set value for book object
+                DocTemplateModel model = new DocTemplateModel();
+                while (cellIterator.hasNext()) {
+                    //Read cell
+                    Cell cell = cellIterator.next();
+                    Object cellValue = getCellValue(cell);
+                    if (cellValue == null || cellValue.toString().isEmpty()) {
+                        continue;
+                    }
+                    System.out.println("index: " + cell.getColumnIndex() + "--value: " + getCellValue(cell));
+                    // Set value for book object
+                    int columnIndex = cell.getColumnIndex();
+                    switch (columnIndex) {
+                        case COLUMN_INDEX_DOC_NAME:
+                            System.out.println("COLUMN_INDEX_DOC_NAME: " + (String) getCellValue(cell));
+                            model.setDocName((String) getCellValue(cell));
+                            break;
+                        case COLUMN_INDEX_DOC_TYPE:
+                            System.out.println("COLUMN_INDEX_DOC_TYPE: " + (String) getCellValue(cell));
+                            model.setDocType((String) getCellValue(cell));
+                            break;
+                        case COLUMN_INDEX_AMOUNT:
+                            System.out.println("COLUMN_INDEX_AMOUNT: " + (double) getCellValue(cell));
+                            model.setAmount(((double) getCellValue(cell)));
+                            break;
+                        case COLUMN_INDEX_SYMBOL:
+                            System.out.println("COLUMN_INDEX_SYMBOL: " + (String) getCellValue(cell));
+                            model.setSymbol((String) getCellValue(cell));
+                            break;
+                        case COLUMN_INDEX_DATE:
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                System.out.println("The cell contains a date value: "
+                                        + cell.getDateCellValue());
+                                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                                String date = dateFormat.format(cell.getDateCellValue());
+                                model.setDate(date);
+                            }
+
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                docTemplateModels.add(model);
+            }
+            return docTemplateModels;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return docTemplateModels;
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+    }
+
+    // Get cell value
+    private static Object getCellValue(Cell cell) {
+        CellType cellType = cell.getCellType();
+        Object cellValue = null;
+        switch (cellType) {
+            case BOOLEAN:
+                cellValue = cell.getBooleanCellValue();
+                break;
+            case FORMULA:
+                Workbook workbook = cell.getSheet().getWorkbook();
+                FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+                cellValue = evaluator.evaluate(cell).getNumberValue();
+                break;
+            case NUMERIC:
+                cellValue = cell.getNumericCellValue();
+                break;
+            case STRING:
+                cellValue = cell.getStringCellValue();
+                break;
+            case _NONE:
+            case BLANK:
+            case ERROR:
+                break;
+            default:
+                break;
+        }
+
+        return cellValue;
+    }
+}
+
 
